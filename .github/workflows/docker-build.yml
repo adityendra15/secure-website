@@ -41,6 +41,14 @@ jobs:
           format: 'cyclonedx'
           output: 'trivy-sbom.json'
 
+      # NEW: Kubescape CIS Benchmark Check (The Inspector)
+      - name: Run Kubescape CIS Benchmark scan
+        uses: kubescape/github-action@main
+        with:
+          files: "k8s-deployment.yml"
+          frameworks: "cis"
+          failThreshold: 10
+
       # NEW: Log into the Garage
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2

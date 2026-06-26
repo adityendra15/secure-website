@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secure-website-deployment
+spec:
+  replicas: 2 # Tell K8s we want EXACTLY 2 copies of our restaurant running at all times
+  selector:
+    matchLabels:
+      app: secure-website
+  template:
+    metadata:
+      labels:
+        app: secure-website
+    spec:
+      containers:
+      - name: website-container
+        # This tells K8s to go to your Cloud Garage to get the image!
+        image: ghcr.io/adityendra15/secure-website:latest
+        ports:
+        - containerPort: 80
