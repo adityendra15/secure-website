@@ -1,0 +1,27 @@
+# 1. The name of the robot
+name: Build Secure Website
+
+# 2. What wakes the robot up? (Any time code is 'pushed' to the 'main' timeline)
+on:
+  push:
+    branches: [ "main" ]
+
+# 3. What does the robot actually do?
+jobs:
+  build-docker-image:
+    # The robot needs a computer to work on. Let's borrow a free Linux machine from GitHub.
+    runs-on: ubuntu-latest
+
+    # The step-by-step checklist
+    steps:
+      # Step A: Download the code from the vault onto the robot's computer
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step B: Run the exact same 'docker build' command you ran manually earlier
+      - name: Build the Docker Image
+        run: docker build -t secure-site-image .
+        
+      # Step C: Just print a success message so we know it worked!
+      - name: Confirm Success
+        run: echo "The image was successfully built in the cloud!"
