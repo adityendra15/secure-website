@@ -1,27 +1,38 @@
-# 1. The name of the robot
-name: Build Secure Website
+name: DevSecOps Pipeline
 
-# 2. What wakes the robot up? (Any time code is 'pushed' to the 'main' timeline)
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
-# 3. What does the robot actually do?
 jobs:
-  build-docker-image:
-    # The robot needs a computer to work on. Let's borrow a free Linux machine from GitHub.
+  build-and-secure:
     runs-on: ubuntu-latest
 
-    # The step-by-step checklist
     steps:
-      # Step A: Download the code from the vault onto the robot's computer
-      - name: Checkout Code
+      # Step 1: Download the code from the GitHub Vault
+      - name: Check out the code
         uses: actions/checkout@v3
 
-      # Step B: Run the exact same 'docker build' command you ran manually earlier
-      - name: Build the Docker Image
-        run: docker build -t secure-site-image .
-        
-      # Step C: Just print a success message so we know it worked!
-      - name: Confirm Success
-        run: echo "The image was successfully built in the cloud!"
+      # Step 2: Build the Docker image
+      - name: Build the Docker image
+        run: docker build -t my-nginx-app:latest .
+
+      # Step 3: Run the Trivy X-Ray scan (The Bouncer / Policy-as-Code Gate)
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'my-nginx-app:latest'
+          format: 'table'
+          exit-code: '1' # Kills the pipeline if it finds a CRITICAL vulnerability
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      # Step 4: Generate the SBOM (The Ingredient List)
+      - name: Generate SBOM
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'my-nginx-app:latest'
+          format: 'cyclonedx'
+          output: 'trivy-sbom.json'

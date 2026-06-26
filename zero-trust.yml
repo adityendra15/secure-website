@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: secure-the-vault
+spec:
+  # 1. Who does this rule apply to?
+  podSelector:
+    matchLabels:
+      app: database
+      
+  # 2. What type of traffic are we controlling? (Ingress = Incoming traffic)
+  policyTypes:
+  - Ingress
+  
+  # Notice how we didn't write an "Allow" rule? 
+  # In Kubernetes, if you turn on Ingress rules but don't specify who is allowed, it automatically blocks EVERYONE.
