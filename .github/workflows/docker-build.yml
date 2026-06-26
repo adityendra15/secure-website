@@ -5,34 +5,50 @@ on:
     branches:
       - main
 
+# Give the robot permission to upload packages to your GitHub account
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-secure:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Download the code from the GitHub Vault
       - name: Check out the code
         uses: actions/checkout@v3
 
-      # Step 2: Build the Docker image
+      # Build and tag the image with your specific GitHub Registry URL
       - name: Build the Docker image
-        run: docker build -t my-nginx-app:latest .
+        run: docker build -t ghcr.io/${{ github.repository_owner }}/secure-website:latest .
 
-      # Step 3: Run the Trivy X-Ray scan (The Bouncer / Policy-as-Code Gate)
+      # The Bouncer: Will kill the pipeline if it finds CRITICAL vulns
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'my-nginx-app:latest'
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/secure-website:latest'
           format: 'table'
-          exit-code: '1' # Kills the pipeline if it finds a CRITICAL vulnerability
+          exit-code: '1' 
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-      # Step 4: Generate the SBOM (The Ingredient List)
+      # The Ingredient List
       - name: Generate SBOM
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'my-nginx-app:latest'
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/secure-website:latest'
           format: 'cyclonedx'
           output: 'trivy-sbom.json'
+
+      # NEW: Log into the Garage
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # NEW: Park the Image in the Garage
+      - name: Push image to Cloud Registry
+        run: docker push ghcr.io/${{ github.repository_owner }}/secure-website:latest
