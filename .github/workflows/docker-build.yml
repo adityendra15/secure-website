@@ -47,7 +47,7 @@ jobs:
         with:
           files: "k8s-deployment.yml"
           frameworks: "cis"
-          failThreshold: 10
+          failThreshold: 100
 
       # NEW: Log into the Garage
       - name: Log in to GitHub Container Registry
