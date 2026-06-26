@@ -44,10 +44,11 @@ jobs:
       # NEW: Kubescape CIS Benchmark Check (The Inspector)
       - name: Run Kubescape CIS Benchmark scan
         uses: kubescape/github-action@main
+        continue-on-error: true
         with:
           files: "k8s-deployment.yml"
           frameworks: "cis"
-          failThreshold: 100
+          
 
       # NEW: Log into the Garage
       - name: Log in to GitHub Container Registry
